@@ -84,11 +84,21 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
     this.camera.position.set(0, -8, 8);
     this.camera.lookAt(0, 0, 0);
 
-    this.renderer = new THREE.WebGLRenderer({ canvas });
+    this.renderer = new THREE.WebGLRenderer({ 
+      canvas, 
+      antialias: true 
+    });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    
+
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    
 
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.2;
 
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping = false;
@@ -101,23 +111,32 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
 
     canvas.addEventListener('click', (event: MouseEvent) => this.onMouseClick(event));
 
-
-    this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    this.directionalLight.position.set(20, -30, -10);
+    this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    this.directionalLight.position.set(10, 10, 10);
     this.directionalLight.castShadow = true;
     this.scene.add(this.directionalLight);
-
-
-    this.directionalLight.shadow.mapSize.width = 1024;
-    this.directionalLight.shadow.mapSize.height = 1024;
+  
+ 
+    this.directionalLight.shadow.mapSize.width = 2048; 
+    this.directionalLight.shadow.mapSize.height = 2048; 
     this.directionalLight.shadow.camera.near = 0.5;
     this.directionalLight.shadow.camera.far = 50;
     this.directionalLight.shadow.camera.left = -10;
     this.directionalLight.shadow.camera.right = 10;
     this.directionalLight.shadow.camera.top = 10;
     this.directionalLight.shadow.camera.bottom = -10;
-    this.directionalLight.shadow.bias = -0.001;
-    this.directionalLight.shadow.radius = 2;
+    
+    this.directionalLight.shadow.bias = -0.0005;
+    this.directionalLight.shadow.normalBias = 0.02; 
+    this.directionalLight.shadow.radius = 4; 
+    
+    this.directionalLight.shadow.intensity = 0.6; 
+    
+    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+    this.scene.add(ambientLight);
+    
+    const hemisphereLight = new THREE.HemisphereLight(0xddeeff, 0x202020, 0.4);
+    this.scene.add(hemisphereLight);
   }
   private createChessBoard(): void {
     const squareSize = 1;
@@ -137,17 +156,30 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
       }
     }
   }
-
   private createPiece(piece: THREE.Group): void {
     piece.castShadow = true;
+    
+    // Asegura que todas las partes de la pieza proyecten y reciban sombras correctamente
     piece.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         child.castShadow = true;
         child.receiveShadow = true;
+        
+        // Mejora los materiales para mejor interacción con la luz
+        if (child.material) {
+          // Asegura que el material sea de tipo MeshStandardMaterial
+          if (child.material instanceof THREE.MeshStandardMaterial) {
+            // Aumenta la calidad de la interacción con la luz
+            child.material.envMapIntensity = 0.8;
+            child.material.needsUpdate = true;
+          }
+        }
       }
     });
+    
     this.scene.add(piece);
   }
+  
   private createPawn(x: number, y: number, color: 'white' | 'black'): void {
 
     const pawnColor = color === 'white' ? 0xFFFFFF : 0x333333;
@@ -1015,7 +1047,7 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
     this.renderer.setSize(width, height);
   }
   private animate(): void {
-    requestAnimationFrame(() => this.animate());
+     requestAnimationFrame(() => this.animate());
 
 
     const lightPosition = new THREE.Vector3();
