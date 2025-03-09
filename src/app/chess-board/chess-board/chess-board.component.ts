@@ -693,34 +693,34 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
     // Normalizar coordenadas del mouse al rango -1 a 1
     const canvas = this.canvasRef.nativeElement;
     const rect = canvas.getBoundingClientRect();
-    
+
     const mouse = new THREE.Vector2();
     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-    
+
     // Configurar el raycaster con las coordenadas del mouse
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(mouse, this.camera);
-    
+
     // Detectar intersecciones con objetos en la escena
     const intersects = raycaster.intersectObjects(this.scene.children, true);
-    
+
     if (intersects.length > 0) {
       // Encontrar el objeto raíz (pieza o casilla del tablero)
       let targetObject = intersects[0].object;
       let rootObject = this.findRootObject(targetObject);
-      
+
       // Si no hay objeto raíz, usar el punto de intersección para calcular la casilla
       if (!rootObject || !rootObject.userData || !rootObject.userData['type']) {
         const point = intersects[0].point;
         const gridX = Math.floor(point.x + (this.boardSize / 2) + 0.5);
         const gridY = Math.floor(point.y + (this.boardSize / 2) + 0.5);
-        
+
         console.log("Coordenadas del tablero:", gridX, gridY);
-        
+
         if (gridX >= 0 && gridX < 8 && gridY >= 0 && gridY < 8) {
           const pieceAtPosition = this.board[gridX][gridY];
-          
+
           if (this.selectedPiece && (!pieceAtPosition || pieceAtPosition !== this.selectedPiece)) {
             // Mover a una casilla vacía o capturar una pieza
             this.movePiece(gridX, gridY);
@@ -737,7 +737,7 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
         const piece = rootObject;
         const x = piece.userData['boardX'];
         const y = piece.userData['boardY'];
-        
+
         if (this.selectedPiece && piece !== this.selectedPiece) {
           // Si ya hay una pieza seleccionada y se hace clic en otra, intentar capturar
           this.movePiece(x, y);
@@ -957,6 +957,7 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
 
     return this.isValidRookMove(fromX, fromY, toX, toY) || this.isValidBishopMove(fromX, fromY, toX, toY);
   }
+
   private isValidKingMove(fromX: number, fromY: number, toX: number, toY: number): boolean {
 
     const dx = Math.abs(toX - fromX);
@@ -1003,13 +1004,12 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
     }
     return null;
   }
-  
-  // Añade también esta función para actualizar el tamaño del renderer cuando la ventana cambia de tamaño
+
   private onWindowResize(): void {
     const canvas = this.canvasRef.nativeElement;
     const width = window.innerWidth;
     const height = window.innerHeight;
-    
+
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height);
