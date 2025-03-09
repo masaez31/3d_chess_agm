@@ -14,506 +14,718 @@ export class ChessBoardComponent implements OnInit, OnDestroy {
   private camera!: THREE.PerspectiveCamera;
   private renderer!: THREE.WebGLRenderer;
   private controls!: OrbitControls;
-  private boardSize = 8; // 8x8 tablero de ajedrez
-  private selectedPiece: THREE.Group | null = null;  // Para saber qué pieza está seleccionada
-  private selectedPosition: { x: number, y: number } | null = null;  // Para almacenar la posición de la pieza seleccionada
+  private boardSize = 8; 
+  private selectedPiece: THREE.Group | null = null;  
+  private selectedPosition: { x: number, y: number } | null = null;  
 
-  // Listas para almacenar las piezas
-  private pawns: THREE.Group[] = [];  // Lista de peones
-  private rooks: THREE.Group[] = [];  // Lista de torres
-  private bishops: THREE.Group[] = []; // Lista de alfiles
-
-  // Matriz para rastrear las posiciones de las piezas en el tablero
+  
+  private pawns: THREE.Group[] = [];  
+  private rooks: THREE.Group[] = []; 
+  private bishops: THREE.Group[] = []; 
+  
   private board: (THREE.Group | null)[][] = Array(8).fill(null).map(() => Array(8).fill(null));
    directionalLight = new THREE.DirectionalLight(0xffffff, 1);
   ngOnInit(): void {
     this.init3DScene();
     this.createChessBoard();
     
-    // Crear peones para las filas 1 y 6
+    
     for (let i = 0; i < this.boardSize; i++) {
-        // Fila 1 (peones blancos)
+        
         this.createPawn(i, 1, 'white');
-        // Fila 6 (peones negros)
+        
         this.createPawn(i, 6, 'black');
     }
 
-    // Crear torres en las esquinas
-    this.createRook(0, 0, 'white'); // Torre blanca esquina inferior izquierda
-    this.createRook(7, 0, 'white'); // Torre blanca esquina inferior derecha
-    this.createRook(0, 7, 'black'); // Torre negra esquina superior izquierda
-    this.createRook(7, 7, 'black'); // Torre negra esquina superior derecha
+    
+    this.createRook(0, 0, 'white'); 
+    this.createRook(7, 0, 'white'); 
+    this.createRook(0, 7, 'black'); 
+    this.createRook(7, 7, 'black'); 
 
-    // Crear alfiles en sus posiciones iniciales
-    this.createBishop(2, 0, 'white'); // Alfil blanco c1
-    this.createBishop(5, 0, 'white'); // Alfil blanco f1
-    this.createBishop(2, 7, 'black'); // Alfil negro c8
-    this.createBishop(5, 7, 'black'); // Alfil negro f8
+    
+    this.createBishop(2, 0, 'white'); 
+    this.createBishop(5, 0, 'white'); 
+    this.createBishop(2, 7, 'black'); 
+    this.createBishop(5, 7, 'black'); 
 
-    this.createKnight(1, 0, 'white'); // Caballo blanco b1
-this.createKnight(6, 0, 'white'); // Caballo blanco g1
-this.createKnight(1, 7, 'black'); // Caballo negro b8
-this.createKnight(6, 7, 'black'); // Caballo negro g8
+    this.createKnight(1, 0, 'white'); 
+this.createKnight(6, 0, 'white'); 
+this.createKnight(1, 7, 'black'); 
+this.createKnight(6, 7, 'black'); 
 
-// Crear reinas en sus posiciones iniciales
-this.createQueen(3, 0, 'white'); // Reina blanca d1
-this.createQueen(3, 7, 'black'); // Reina negra d8
 
-// Crear reyes en sus posiciones iniciales
-this.createKing(4, 0, 'white'); // Rey blanco e1
-this.createKing(4, 7, 'black'); // Rey negro e8
+this.createQueen(3, 0, 'white'); 
+this.createQueen(3, 7, 'black'); 
+
+
+this.createKing(4, 0, 'white'); 
+this.createKing(4, 7, 'black'); 
 
     this.animate();
   }
 
   ngOnDestroy(): void {
-    // Limpiar recursos cuando el componente se destruye
+    
     this.renderer.dispose();
   }
 
   private init3DScene(): void {
-    const canvas = this.canvasRef.nativeElement;
+  const canvas = this.canvasRef.nativeElement;
+  this.scene = new THREE.Scene();
 
-    this.scene = new THREE.Scene();
-    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  
+  const textureLoader = new THREE.TextureLoader();
+  const backgroundTexture = textureLoader.load('ruta/a/tu/imagen.jpg');
+  this.scene.background = backgroundTexture;
 
-    // Coloca la cámara en una posición elevada
-    this.camera.position.set(0, -8, 8); // Cámara ligeramente elevada
-    this.camera.lookAt(0, 0, 0); // Apunta al centro del tablero
+  this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  this.camera.position.set(0, -8, 8); 
+  this.camera.lookAt(0, 0, 0); 
 
-    this.renderer = new THREE.WebGLRenderer({ canvas });
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.shadowMap.enabled = true; // Habilitar sombras
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Sombras suaves
+  this.renderer = new THREE.WebGLRenderer({ canvas });
+  this.renderer.setSize(window.innerWidth, window.innerHeight);
+  this.renderer.shadowMap.enabled = true; 
+  this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
 
-    // Agregar controles para manipular la cámara
-    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-    this.controls.enableDamping = false;
-    this.controls.dampingFactor = 0.25;
-    this.controls.screenSpacePanning = false;
+  
+  this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+  this.controls.enableDamping = false;
+  this.controls.dampingFactor = 0.25;
+  this.controls.screenSpacePanning = false;
+  this.controls.enableRotate = true; 
+  this.controls.enableZoom = false; 
+  this.controls.enablePan = false; 
 
-    // Deshabilitar la rotación, zoom y panning
-    this.controls.enableRotate = true; // Desactiva la rotación
-    this.controls.enableZoom = false; // Desactiva el zoom
-    this.controls.enablePan = false; // Desactiva el desplazamiento
+  
+  canvas.addEventListener('click', (event: MouseEvent) => this.onMouseClick(event));
 
-    // Agregar evento de clic en el canvas para detectar el clic en el tablero
-    canvas.addEventListener('click', (event: MouseEvent) => this.onMouseClick(event));
+  
+  this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+  this.directionalLight.position.set(20, -30, -10); 
+  this.directionalLight.castShadow = true;
+  this.scene.add(this.directionalLight);
 
-    // Añadir una luz direccional que proyecte sombras
-    this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-    this.directionalLight.position.set(20, -30, -10); // Ajusta la posición para que la luz sea más frontal
-    this.directionalLight.castShadow = true;
-    this.scene.add(this.directionalLight);
-
-    // Configurar el mapa de sombras
-    this.directionalLight.shadow.mapSize.width = 1024;
-    this.directionalLight.shadow.mapSize.height = 1024;
-    this.directionalLight.shadow.camera.near = 0.5;
-    this.directionalLight.shadow.camera.far = 50;
-    this.directionalLight.shadow.camera.left = -10;
-    this.directionalLight.shadow.camera.right = 10;
-    this.directionalLight.shadow.camera.top = 10;
-    this.directionalLight.shadow.camera.bottom = -10;
-    this.directionalLight.shadow.bias = -0.001; // Ajusta el sesgo de las sombras para evitar artefactos
-    this.directionalLight.shadow.radius = 2; // Ajusta el radio de las sombras para suavizarlas
+  
+  this.directionalLight.shadow.mapSize.width = 1024;
+  this.directionalLight.shadow.mapSize.height = 1024;
+  this.directionalLight.shadow.camera.near = 0.5;
+  this.directionalLight.shadow.camera.far = 50;
+  this.directionalLight.shadow.camera.left = -10;
+  this.directionalLight.shadow.camera.right = 10;
+  this.directionalLight.shadow.camera.top = 10;
+  this.directionalLight.shadow.camera.bottom = -10;
+  this.directionalLight.shadow.bias = -0.001; 
+  this.directionalLight.shadow.radius = 2; 
 }
 private createChessBoard(): void {
-  const squareSize = 1; // Tamaño de cada casilla
+  const squareSize = 1; 
   const whiteMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5, metalness: 0.5 });
   const blackMaterial = new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.5, metalness: 0.5 });
 
   for (let i = 0; i < this.boardSize; i++) {
       for (let j = 0; j < this.boardSize; j++) {
-          const geometry = new THREE.BoxGeometry(squareSize, squareSize, 0.1); // Casillas del tablero
+          const geometry = new THREE.BoxGeometry(squareSize, squareSize, 0.1); 
           const material = (i + j) % 2 === 0 ? whiteMaterial : blackMaterial;
           const square = new THREE.Mesh(geometry, material);
 
-          // Coloca el tablero en el plano XY
+          
           square.position.set(i - (this.boardSize / 2), j - (this.boardSize / 2), 0);
-          square.receiveShadow = true; // Recibir sombras
+          square.receiveShadow = true; 
           this.scene.add(square);
       }
   }
 }
 
 private createPiece(piece: THREE.Group): void {
-  piece.castShadow = true; // Proyectar sombras
+  piece.castShadow = true; 
   piece.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-          child.castShadow = true; // Proyectar sombras
-          child.receiveShadow = true; // Recibir sombras
+          child.castShadow = true; 
+          child.receiveShadow = true; 
       }
   });
   this.scene.add(piece);
 }
-  private createPawn(x: number, y: number, color: 'white' | 'black'): void {
-    // Define el color del material basado en el color del peón
-    const pawnColor = color === 'white' ? 0xeeeeee : 0x555555;
-    
-    // Crea la base del peón (cilindro)
-    const baseGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 32);  // Base ancha y delgada
-    const baseMaterial = new THREE.MeshBasicMaterial({ color: pawnColor });
+private createPawn(x: number, y: number, color: 'white' | 'black'): void {
+  
+  const pawnColor = color === 'white' ? 0xFFFFFF : 0x333333;
+  
+  
+  
+  
+  const baseRoughness = color === 'white' ? 0.2 : 0.5;
+  const baseMetalness = color === 'white' ? 0.0 : 0.5;
+  const headRoughness = color === 'white' ? 0.1 : 0.3;
+  const headMetalness = color === 'white' ? 0.0 : 0.7;
+  
+  
+  const baseGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 32);
+  const baseMaterial = new THREE.MeshStandardMaterial({ 
+    color: pawnColor,
+    roughness: baseRoughness,
+    metalness: baseMetalness
+  });
+  const base = new THREE.Mesh(baseGeometry, baseMaterial);
 
-    const base = new THREE.Mesh(baseGeometry, baseMaterial);
+  
+  const neckGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.6, 32);
+  const neckMaterial = new THREE.MeshStandardMaterial({ 
+    color: pawnColor,
+    roughness: baseRoughness - 0.05,
+    metalness: baseMetalness
+  });
+  const neck = new THREE.Mesh(neckGeometry, neckMaterial);
+  neck.position.y = 0.5;
 
-    // Crea la parte central del peón (cilindro más estrecho)
-    const neckGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.6, 32);  // Parte central más estrecha
-    const neckMaterial = new THREE.MeshBasicMaterial({ color: pawnColor });
+  
+  const headGeometry = new THREE.SphereGeometry(0.3, 32, 32);
+  const headMaterial = new THREE.MeshStandardMaterial({ 
+    color: pawnColor,
+    roughness: headRoughness,
+    metalness: headMetalness,
+    envMapIntensity: color === 'white' ? 1.5 : 1.0
+  });
+  const head = new THREE.Mesh(headGeometry, headMaterial);
+  head.position.y = 1.1;
 
-    const neck = new THREE.Mesh(neckGeometry, neckMaterial);
-    neck.position.y = 0.5;  // Coloca la parte central sobre la base
+  
+  const ringGeometry = new THREE.TorusGeometry(0.3, 0.05, 16, 32);
+  const ringMaterial = new THREE.MeshStandardMaterial({ 
+    color: pawnColor,
+    roughness: color === 'white' ? 0.05 : 0.1,
+    metalness: color === 'white' ? 0.1 : 0.8
+  });
+  const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+  ring.position.y = 0.95;
+  ring.rotation.x = Math.PI / 2;
 
-    // Crea la parte superior del peón (esfera)
-    const headGeometry = new THREE.SphereGeometry(0.3, 32, 32);  // Cabeza redonda
-    const headMaterial = new THREE.MeshBasicMaterial({ color: pawnColor });
+  
+  const pawn = new THREE.Group();
+  pawn.add(base);
+  pawn.add(neck);
+  pawn.add(ring);
+  pawn.add(head);
 
-    const head = new THREE.Mesh(headGeometry, headMaterial);
-    head.position.y = 1.1;  // Coloca la cabeza en la parte superior de la pieza
+  
+  pawn.rotation.x = Math.PI / 2;
 
-    // Agrupamos todas las partes del peón en un objeto
-    const pawn = new THREE.Group();
-    pawn.add(base);
-    pawn.add(neck);
-    pawn.add(head);
+  
+  pawn.position.set(x - (this.boardSize / 2), y - (this.boardSize / 2), 0.05);
 
-    // Rotamos el peón para que esté de pie (rotación alrededor del eje X)
-    pawn.rotation.x = Math.PI / 2; // Gira 90 grados alrededor del eje X
+  
+  pawn.userData = { 
+    isSelected: false,
+    color: color,
+    type: 'pawn',
+    boardX: x,
+    boardY: y
+  };
+  
+  this.scene.add(pawn);
+  this.createPiece(pawn);
+  this.pawns.push(pawn);
+  this.board[x][y] = pawn;
+}
+private createRook(x: number, y: number, color: 'white' | 'black'): void {
+  
+  const rookColor = color === 'white' ? 0xFFFFFF : 0x333333;
+  const baseRoughness = color === 'white' ? 0.2 : 0.5;
+  const baseMetalness = color === 'white' ? 0.0 : 0.5;
 
-    // Posicionamos la pieza en el tablero
-    pawn.position.set(x - (this.boardSize / 2), y - (this.boardSize / 2), 0.05);  // Ajusta la altura de la pieza
+  
+  const baseGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 32);
+  const baseMaterial = new THREE.MeshStandardMaterial({
+    color: rookColor,
+    roughness: baseRoughness,
+    metalness: baseMetalness
+  });
+  const base = new THREE.Mesh(baseGeometry, baseMaterial);
 
-    // Guardar el peón y agregarlo a la escena
-    pawn.userData = { 
-      isSelected: false,
-      color: color,  // Guardar el color del peón
-      type: 'pawn',  // Tipo de pieza
-      boardX: x,     // Posición en el tablero
-      boardY: y
-    };
-    
-    this.scene.add(pawn);
-    this.createPiece(pawn);
-    // Guardar el peón para utilizarlo más tarde
-    this.pawns.push(pawn);
-    
-    // Registrar la pieza en la matriz del tablero
-    this.board[x][y] = pawn;
+  
+  const bodyGeometry = new THREE.CylinderGeometry(0.45, 0.45, 0.8, 32);
+  const bodyMaterial = new THREE.MeshStandardMaterial({
+    color: rookColor,
+    roughness: baseRoughness - 0.05,
+    metalness: baseMetalness
+  });
+  const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+  body.position.y = 0.5;
+
+  
+  const topGroup = new THREE.Group();
+  const almenaGeometry = new THREE.BoxGeometry(0.15, 0.15, 0.3);
+  const almenaMaterial = new THREE.MeshStandardMaterial({
+    color: rookColor,
+    roughness: baseRoughness - 0.1,
+    metalness: baseMetalness + 0.1
+  });
+
+  
+  for (let i = 0; i < 4; i++) {
+    const almena = new THREE.Mesh(almenaGeometry, almenaMaterial);
+    almena.position.set(
+      (i < 2 ? 0.25 : -0.25), 
+      1.1, 
+      (i % 2 === 0 ? 0.25 : -0.25) 
+    );
+    topGroup.add(almena);
   }
 
-  private createRook(x: number, y: number, color: 'white' | 'black'): void {
-    // Define el color del material basado en el color de la torre
-    const rookColor = color === 'white' ? 0xeeeeee : 0x555555;
-    
-    // Crea la base de la torre (cilindro)
-    const baseGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 32);
-    const baseMaterial = new THREE.MeshBasicMaterial({ color: rookColor });
-    const base = new THREE.Mesh(baseGeometry, baseMaterial);
+  
+  const rook = new THREE.Group();
+  rook.add(base);
+  rook.add(body);
+  rook.add(topGroup);
+  this.createPiece(rook);
 
-    // Crea el cuerpo de la torre (cilindro)
-    const bodyGeometry = new THREE.CylinderGeometry(0.45, 0.45, 0.8, 32);
-    const bodyMaterial = new THREE.MeshBasicMaterial({ color: rookColor });
-    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-    body.position.y = 0.5;
+  
+  rook.rotation.x = Math.PI / 2; 
 
-    // Crea la parte superior de la torre (almenas)
-    const topGroup = new THREE.Group();
-    
-    // Crear las almenas
-    const almenaGeometry = new THREE.BoxGeometry(0.15, 0.15, 0.3);
-    const almenaMaterial = new THREE.MeshBasicMaterial({ color: rookColor });
-    
-    // Añadir 4 almenas en los bordes
-    for (let i = 0; i < 4; i++) {
-      const almena = new THREE.Mesh(almenaGeometry, almenaMaterial);
-      almena.position.set(
-        (i < 2 ? 0.25 : -0.25), // x: alternar entre positivo y negativo
-        1.1, // y: arriba
-        (i % 2 === 0 ? 0.25 : -0.25) // z: alternar entre positivo y negativo
-      );
-      topGroup.add(almena);
-    }
+  
+  rook.position.set(x - (this.boardSize / 2), y - (this.boardSize / 2), 0.05);
 
-    // Agrupamos todas las partes de la torre en un objeto
-    const rook = new THREE.Group();
-    rook.add(base);
-    rook.add(body);
-    rook.add(topGroup);
+  
+  rook.userData = {
+    isSelected: false,
+    color: color, 
+    type: 'rook', 
+    boardX: x, 
+    boardY: y 
+  };
 
-    // Rotamos la torre para que esté de pie (rotación alrededor del eje X)
-    rook.rotation.x = Math.PI / 2; // Gira 90 grados alrededor del eje X
+  this.scene.add(rook);
 
-    // Posicionamos la pieza en el tablero
-    rook.position.set(x - (this.boardSize / 2), y - (this.boardSize / 2), 0.05);
+  
+  this.board[x][y] = rook;
+}
 
-    // Guardar la torre y agregarla a la escena
-    rook.userData = { 
-      isSelected: false,
-      color: color,  // Guardar el color de la torre
-      type: 'rook',  // Tipo de pieza
-      boardX: x,     // Posición en el tablero
-      boardY: y
-    };
-    
-    this.scene.add(rook);
-    
-    // Guardar la torre para utilizarla más tarde
-    this.rooks.push(rook);
-    
-    // Registrar la pieza en la matriz del tablero
-    this.board[x][y] = rook;
-  }
+private createBishop(x: number, y: number, color: 'white' | 'black'): void {
+  
+  const bishopColor = color === 'white' ? 0xFFFFFF : 0x333333;
+  const baseRoughness = color === 'white' ? 0.2 : 0.5;
+  const baseMetalness = color === 'white' ? 0.0 : 0.5;
 
-  private createBishop(x: number, y: number, color: 'white' | 'black'): void {
-    // Define el color del material basado en el color del alfil
-    const bishopColor = color === 'white' ? 0xeeeeee : 0x555555;
-    
-    // Crea la base del alfil (cilindro)
-    const baseGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 32);
-    const baseMaterial = new THREE.MeshBasicMaterial({ color: bishopColor });
-    const base = new THREE.Mesh(baseGeometry, baseMaterial);
+  
+  const baseGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 32);
+  const baseMaterial = new THREE.MeshStandardMaterial({
+    color: bishopColor,
+    roughness: baseRoughness,
+    metalness: baseMetalness
+  });
+  const base = new THREE.Mesh(baseGeometry, baseMaterial);
 
-    // Crea el cuerpo del alfil (cono invertido)
-    const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.45, 0.7, 32);
-    const bodyMaterial = new THREE.MeshBasicMaterial({ color: bishopColor });
-    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-    body.position.y = 0.5;
+  
+  const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.45, 0.7, 32);
+  const bodyMaterial = new THREE.MeshStandardMaterial({
+    color: bishopColor,
+    roughness: baseRoughness - 0.05,
+    metalness: baseMetalness
+  });
+  const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+  body.position.y = 0.5;
 
-    // Crea la parte central del alfil (esfera)
-    const middleGeometry = new THREE.SphereGeometry(0.3, 32, 32);
-    const middleMaterial = new THREE.MeshBasicMaterial({ color: bishopColor });
-    const middle = new THREE.Mesh(middleGeometry, middleMaterial);
-    middle.position.y = 1.0;
+  
+  const middleGeometry = new THREE.SphereGeometry(0.3, 32, 32);
+  const middleMaterial = new THREE.MeshStandardMaterial({
+    color: bishopColor,
+    roughness: baseRoughness - 0.1,
+    metalness: baseMetalness + 0.1
+  });
+  const middle = new THREE.Mesh(middleGeometry, middleMaterial);
+  middle.position.y = 1.0;
 
-    // Crea la parte superior del alfil (forma redondeada con una hendidura)
-    const topGeometry = new THREE.ConeGeometry(0.2, 0.4, 32);
-    const topMaterial = new THREE.MeshBasicMaterial({ color: bishopColor });
-    const top = new THREE.Mesh(topGeometry, topMaterial);
-    top.position.y = 1.4;
+  
+  const topGeometry = new THREE.ConeGeometry(0.2, 0.4, 32);
+  const topMaterial = new THREE.MeshStandardMaterial({
+    color: bishopColor,
+    roughness: baseRoughness - 0.15,
+    metalness: baseMetalness + 0.2
+  });
+  const top = new THREE.Mesh(topGeometry, topMaterial);
+  top.position.y = 1.4;
 
-    // Agrupamos todas las partes del alfil en un objeto
-    const bishop = new THREE.Group();
-    bishop.add(base);
-    bishop.add(body);
-    bishop.add(middle);
-    bishop.add(top);
+  
+  const bishop = new THREE.Group();
+  bishop.add(base);
+  bishop.add(body);
+  bishop.add(middle);
+  bishop.add(top);
 
-    // Rotamos el alfil para que esté de pie (rotación alrededor del eje X)
-    bishop.rotation.x = Math.PI / 2; // Gira 90 grados alrededor del eje X
+  
+  bishop.rotation.x = Math.PI / 2; 
 
-    // Posicionamos la pieza en el tablero
-    bishop.position.set(x - (this.boardSize / 2), y - (this.boardSize / 2), 0.05);
+  
+  bishop.position.set(x - (this.boardSize / 2), y - (this.boardSize / 2), 0.05);
 
-    // Guardar el alfil y agregarlo a la escena
-    bishop.userData = { 
-      isSelected: false,
-      color: color,  // Guardar el color del alfil
-      type: 'bishop',  // Tipo de pieza
-      boardX: x,     // Posición en el tablero
-      boardY: y
-    };
-    
-    this.scene.add(bishop);
-    
-    // Guardar el alfil para utilizarlo más tarde
-    this.bishops.push(bishop);
-    
-    // Registrar la pieza en la matriz del tablero
-    this.board[x][y] = bishop;
-  }
+  
+  bishop.userData = {
+    isSelected: false,
+    color: color, 
+    type: 'bishop', 
+    boardX: x, 
+    boardY: y 
+  };
+
+  this.scene.add(bishop);
+  this.createPiece(bishop);
+
+  
+  this.board[x][y] = bishop;
+}
+
 
   private createKnight(x: number, y: number, color: 'white' | 'black'): void {
-    // Define el color del material basado en el color del caballo
-    const knightColor = color === 'white' ? 0xeeeeee : 0x555555;
-
-    // Crea la base del caballo (cilindro)
+    
+    const knightColor = color === 'white' ? 0xFFFFFF : 0x333333;
+    const baseRoughness = color === 'white' ? 0.2 : 0.5;
+    const baseMetalness = color === 'white' ? 0.0 : 0.5;
+    const headRoughness = color === 'white' ? 0.1 : 0.3;
+    const headMetalness = color === 'white' ? 0.0 : 0.7;
+  
+    
     const baseGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 32);
-    const baseMaterial = new THREE.MeshBasicMaterial({ color: knightColor });
+    const baseMaterial = new THREE.MeshStandardMaterial({
+      color: knightColor,
+      roughness: baseRoughness,
+      metalness: baseMetalness
+    });
     const base = new THREE.Mesh(baseGeometry, baseMaterial);
-
-    // Crea el cuerpo del caballo (cilindro)
+  
+    
     const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.3, 0.8, 32);
-    const bodyMaterial = new THREE.MeshBasicMaterial({ color: knightColor });
+    const bodyMaterial = new THREE.MeshStandardMaterial({
+      color: knightColor,
+      roughness: baseRoughness - 0.05,
+      metalness: baseMetalness
+    });
     const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
     body.position.y = 0.5;
-
-    // Crea la cabeza del caballo (forma personalizada)
+  
+    
     const headGeometry = new THREE.BoxGeometry(0.4, 0.4, 0.6);
-    const headMaterial = new THREE.MeshBasicMaterial({ color: knightColor });
+    const headMaterial = new THREE.MeshStandardMaterial({
+      color: knightColor,
+      roughness: headRoughness,
+      metalness: headMetalness,
+      envMapIntensity: color === 'white' ? 1.5 : 1.0
+    });
     const head = new THREE.Mesh(headGeometry, headMaterial);
     head.position.set(0, 0.8, 0.3);
-
-    // Crea las orejas del caballo (formas personalizadas)
+  
+    
     const earGeometry = new THREE.ConeGeometry(0.1, 0.2, 32);
-    const earMaterial = new THREE.MeshBasicMaterial({ color: knightColor });
+    const earMaterial = new THREE.MeshStandardMaterial({
+      color: knightColor,
+      roughness: headRoughness - 0.05,
+      metalness: headMetalness + 0.1
+    });
     const leftEar = new THREE.Mesh(earGeometry, earMaterial);
     const rightEar = new THREE.Mesh(earGeometry, earMaterial);
     leftEar.position.set(-0.15, 1.1, 0.3);
     rightEar.position.set(0.15, 1.1, 0.3);
-
-    // Agrupamos todas las partes del caballo en un objeto
+  
+    
     const knight = new THREE.Group();
     knight.add(base);
     knight.add(body);
     knight.add(head);
     knight.add(leftEar);
     knight.add(rightEar);
+    this.createPiece(knight);
 
-    // Rotamos el caballo para que esté de pie (rotación alrededor del eje X)
-    knight.rotation.x = Math.PI / 2; // Gira 90 grados alrededor del eje X
-
-    // Posicionamos la pieza en el tablero
+    
+    knight.rotation.x = Math.PI / 2; 
+   if(color === 'white') knight.rotation.y = Math.PI ;
+    
     knight.position.set(x - (this.boardSize / 2), y - (this.boardSize / 2), 0.05);
-
-    // Guardar el caballo y agregarlo a la escena
-    knight.userData = { 
-        isSelected: false,
-        color: color, // Guardar el color del caballo
-        type: 'knight', // Tipo de pieza
-        boardX: x, // Posición en el tablero
-        boardY: y
+  
+    
+    knight.userData = {
+      isSelected: false,
+      color: color, 
+      type: 'knight', 
+      boardX: x, 
+      boardY: y 
     };
-
+  
     this.scene.add(knight);
-
-    // Registrar la pieza en la matriz del tablero
+  
+    
     this.board[x][y] = knight;
-}
+  }
 
 private createQueen(x: number, y: number, color: 'white' | 'black'): void {
-  // Define el color del material basado en el color de la reina
-  const queenColor = color === 'white' ? 0xeeeeee : 0x555555;
-
-  // Crea la base de la reina (cilindro)
+  
+  const queenColor = color === 'white' ? 0xFFFFFF : 0x333333;
+  
+  
+  
+  
+  const baseRoughness = color === 'white' ? 0.2 : 0.5;
+  const baseMetalness = color === 'white' ? 0.0 : 0.5;
+  const topRoughness = color === 'white' ? 0.1 : 0.3;
+  const topMetalness = color === 'white' ? 0.0 : 0.7;
+  
+  
   const baseGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 32);
-  const baseMaterial = new THREE.MeshBasicMaterial({ color: queenColor });
+  const baseMaterial = new THREE.MeshStandardMaterial({ 
+    color: queenColor,
+    roughness: baseRoughness,
+    metalness: baseMetalness
+  });
   const base = new THREE.Mesh(baseGeometry, baseMaterial);
 
-  // Crea el cuerpo de la reina (cilindro)
-  const bodyGeometry = new THREE.CylinderGeometry(0.4, 0.4, 1.0, 32);
-  const bodyMaterial = new THREE.MeshBasicMaterial({ color: queenColor });
+  
+  const bodyGeometry = new THREE.CylinderGeometry(0.4, 0.45, 0.8, 32);
+  const bodyMaterial = new THREE.MeshStandardMaterial({ 
+    color: queenColor,
+    roughness: baseRoughness - 0.05,
+    metalness: baseMetalness
+  });
   const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-  body.position.y = 0.6;
+  body.position.y = 0.5;
 
-  // Crea la corona de la reina (cono)
-  const crownGeometry = new THREE.ConeGeometry(0.3, 0.5, 32);
-  const crownMaterial = new THREE.MeshBasicMaterial({ color: queenColor });
-  const crown = new THREE.Mesh(crownGeometry, crownMaterial);
-  crown.position.y = 1.3;
+  
+  const middleGeometry = new THREE.SphereGeometry(0.35, 32, 32);
+  const middleMaterial = new THREE.MeshStandardMaterial({ 
+    color: queenColor,
+    roughness: topRoughness + 0.05,
+    metalness: topMetalness - 0.1
+  });
+  const middle = new THREE.Mesh(middleGeometry, middleMaterial);
+  middle.position.y = 1.0;
 
-  // Agrupamos todas las partes de la reina en un objeto
+  
+  const crownBaseGeometry = new THREE.CylinderGeometry(0.25, 0.35, 0.2, 32);
+  const crownBaseMaterial = new THREE.MeshStandardMaterial({ 
+    color: queenColor,
+    roughness: topRoughness,
+    metalness: topMetalness,
+    envMapIntensity: color === 'white' ? 1.5 : 1.0
+  });
+  const crownBase = new THREE.Mesh(crownBaseGeometry, crownBaseMaterial);
+  crownBase.position.y = 1.2;
+
+  
+  const tipGeometry = new THREE.SphereGeometry(0.08, 16, 16);
+  const tipMaterial = new THREE.MeshStandardMaterial({ 
+    color: queenColor,
+    roughness: topRoughness - 0.05,
+    metalness: topMetalness + 0.1,
+    envMapIntensity: color === 'white' ? 1.8 : 1.2
+  });
+  
+  const crownTips = new THREE.Group();
+  
+  for (let i = 0; i < 5; i++) {
+    const tip = new THREE.Mesh(tipGeometry, tipMaterial);
+    const angle = (i / 5) * Math.PI * 2;
+    tip.position.set(
+      0.2 * Math.cos(angle), 
+      1.45, 
+      0.2 * Math.sin(angle) 
+    );
+    crownTips.add(tip);
+  }
+  
+  
+  const centerTipGeometry = new THREE.SphereGeometry(0.12, 16, 16);
+  const centerTip = new THREE.Mesh(centerTipGeometry, tipMaterial);
+  centerTip.position.y = 1.5;
+  crownTips.add(centerTip);
+
+  
+  const ringGeometry = new THREE.TorusGeometry(0.3, 0.05, 16, 32);
+  const ringMaterial = new THREE.MeshStandardMaterial({ 
+    color: queenColor,
+    roughness: color === 'white' ? 0.05 : 0.1,
+    metalness: color === 'white' ? 0.1 : 0.8
+  });
+  const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+  ring.position.y = 0.95;
+  ring.rotation.x = Math.PI / 2;
+
+  
   const queen = new THREE.Group();
   queen.add(base);
   queen.add(body);
-  queen.add(crown);
+  queen.add(middle);
+  queen.add(crownBase);
+  queen.add(crownTips);
+  queen.add(ring);
 
-  // Rotamos la reina para que esté de pie (rotación alrededor del eje X)
-  queen.rotation.x = Math.PI / 2; // Gira 90 grados alrededor del eje X
+  
+  queen.rotation.x = Math.PI / 2;
 
-  // Posicionamos la pieza en el tablero
+  
   queen.position.set(x - (this.boardSize / 2), y - (this.boardSize / 2), 0.05);
 
-  // Guardar la reina y agregarla a la escena
+  
   queen.userData = { 
-      isSelected: false,
-      color: color, // Guardar el color de la reina
-      type: 'queen', // Tipo de pieza
-      boardX: x, // Posición en el tablero
-      boardY: y
+    isSelected: false,
+    color: color,
+    type: 'queen',
+    boardX: x,
+    boardY: y
   };
-
+  
   this.scene.add(queen);
-
-  // Registrar la pieza en la matriz del tablero
+  this.createPiece(queen);
+  
+  
   this.board[x][y] = queen;
 }
 
 private createKing(x: number, y: number, color: 'white' | 'black'): void {
-  // Define el color del material basado en el color del rey
-  const kingColor = color === 'white' ? 0xeeeeee : 0x555555;
-
-  // Crea la base del rey (cilindro)
+  
+  const kingColor = color === 'white' ? 0xFFFFFF : 0x333333;
+  
+  
+  
+  
+  const baseRoughness = color === 'white' ? 0.2 : 0.5;
+  const baseMetalness = color === 'white' ? 0.0 : 0.5;
+  const topRoughness = color === 'white' ? 0.1 : 0.3;
+  const topMetalness = color === 'white' ? 0.0 : 0.7;
+  
+  
   const baseGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 32);
-  const baseMaterial = new THREE.MeshBasicMaterial({ color: kingColor });
+  const baseMaterial = new THREE.MeshStandardMaterial({ 
+    color: kingColor,
+    roughness: baseRoughness,
+    metalness: baseMetalness
+  });
   const base = new THREE.Mesh(baseGeometry, baseMaterial);
 
-  // Crea el cuerpo del rey (cilindro)
-  const bodyGeometry = new THREE.CylinderGeometry(0.4, 0.4, 1.0, 32);
-  const bodyMaterial = new THREE.MeshBasicMaterial({ color: kingColor });
+  
+  const bodyGeometry = new THREE.CylinderGeometry(0.4, 0.45, 0.8, 32);
+  const bodyMaterial = new THREE.MeshStandardMaterial({ 
+    color: kingColor,
+    roughness: baseRoughness - 0.05,
+    metalness: baseMetalness
+  });
   const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-  body.position.y = 0.6;
+  body.position.y = 0.5;
 
-  // Crea la corona del rey (cono)
-  const crownGeometry = new THREE.ConeGeometry(0.3, 0.5, 32);
-  const crownMaterial = new THREE.MeshBasicMaterial({ color: kingColor });
-  const crown = new THREE.Mesh(crownGeometry, crownMaterial);
-  crown.position.y = 1.3;
+  
+  const middleGeometry = new THREE.SphereGeometry(0.35, 32, 32);
+  const middleMaterial = new THREE.MeshStandardMaterial({ 
+    color: kingColor,
+    roughness: topRoughness + 0.05,
+    metalness: topMetalness - 0.1
+  });
+  const middle = new THREE.Mesh(middleGeometry, middleMaterial);
+  middle.position.y = 1.0;
 
-  // Agrupamos todas las partes del rey en un objeto
+  
+  const ringGeometry = new THREE.TorusGeometry(0.3, 0.05, 16, 32);
+  const ringMaterial = new THREE.MeshStandardMaterial({ 
+    color: kingColor,
+    roughness: color === 'white' ? 0.05 : 0.1,
+    metalness: color === 'white' ? 0.1 : 0.8
+  });
+  const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+  ring.position.y = 0.95;
+  ring.rotation.x = Math.PI / 2;
+
+  
+  const crownBaseGeometry = new THREE.CylinderGeometry(0.25, 0.35, 0.2, 32);
+  const crownBaseMaterial = new THREE.MeshStandardMaterial({ 
+    color: kingColor,
+    roughness: topRoughness,
+    metalness: topMetalness,
+    envMapIntensity: color === 'white' ? 1.5 : 1.0
+  });
+  const crownBase = new THREE.Mesh(crownBaseGeometry, crownBaseMaterial);
+  crownBase.position.y = 1.2;
+
+  
+  const crossVerticalGeometry = new THREE.BoxGeometry(0.08, 0.3, 0.08);
+  const crossHorizontalGeometry = new THREE.BoxGeometry(0.2, 0.08, 0.08);
+  const crossMaterial = new THREE.MeshStandardMaterial({ 
+    color: kingColor,
+    roughness: topRoughness - 0.05,
+    metalness: topMetalness + 0.1,
+    envMapIntensity: color === 'white' ? 1.8 : 1.2
+  });
+  
+  const crossVertical = new THREE.Mesh(crossVerticalGeometry, crossMaterial);
+  crossVertical.position.y = 1.5;
+  
+  const crossHorizontal = new THREE.Mesh(crossHorizontalGeometry, crossMaterial);
+  crossHorizontal.position.y = 1.45;
+  
+  
   const king = new THREE.Group();
   king.add(base);
   king.add(body);
-  king.add(crown);
+  king.add(middle);
+  king.add(ring);
+  king.add(crownBase);
+  king.add(crossVertical);
+  king.add(crossHorizontal);
 
-  // Rotamos el rey para que esté de pie (rotación alrededor del eje X)
-  king.rotation.x = Math.PI / 2; // Gira 90 grados alrededor del eje X
+  
+  king.rotation.x = Math.PI / 2;
 
-  // Posicionamos la pieza en el tablero
+  
   king.position.set(x - (this.boardSize / 2), y - (this.boardSize / 2), 0.05);
 
-  // Guardar el rey y agregarlo a la escena
+  
   king.userData = { 
-      isSelected: false,
-      color: color, // Guardar el color del rey
-      type: 'king', // Tipo de pieza
-      boardX: x, // Posición en el tablero
-      boardY: y
+    isSelected: false,
+    color: color,
+    type: 'king',
+    boardX: x,
+    boardY: y
   };
-
+  
   this.scene.add(king);
-
-  // Registrar la pieza en la matriz del tablero
+  this.createPiece(king);
+  
+  
   this.board[x][y] = king;
 }
 
   private onMouseClick(event: MouseEvent): void {
     console.log("Click detectado en el canvas");
 
-    // Convertir las coordenadas del mouse a normalizadas
+    
     const mouse = new THREE.Vector2();
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
-    // Crear un raycaster para detectar el objeto debajo del clic
+    
     const raycaster = new THREE.Raycaster();
     raycaster.setFromCamera(mouse, this.camera);
 
-    // Detectamos si el raycaster intersecta con objetos de la escena
+    
     const intersects = raycaster.intersectObjects(this.scene.children, true);
 
     if (intersects.length > 0) {
       const intersection = intersects[0];
       console.log("Objeto clicado:", intersection.object);
 
-      // Convertir el punto de intersección en coordenadas del tablero
+      
       const gridX = Math.round(intersection.point.x + (this.boardSize / 2));
       const gridY = Math.round(intersection.point.y + (this.boardSize / 2));
       
       console.log("Coordenadas del tablero:", gridX, gridY);
 
-      // Comprobar si las coordenadas están dentro del tablero
+      
       if (gridX >= 0 && gridX < 8 && gridY >= 0 && gridY < 8) {
-        // Comprobar si hay una pieza en esa posición
+        
         const pieceAtPosition = this.board[gridX][gridY];
 
         if (pieceAtPosition && !this.selectedPiece) {
-          // Seleccionar la pieza
+          
           this.selectPiece(pieceAtPosition);
         } else if (pieceAtPosition === this.selectedPiece) {
-          // Deseleccionar la pieza
+          
           this.deselectPiece();
         } else if (this.selectedPiece) {
-          // Intentar mover la pieza seleccionada
+          
           this.movePiece(gridX, gridY);
         }
       }
@@ -525,15 +737,15 @@ private createKing(x: number, y: number, color: 'white' | 'black'): void {
     this.selectedPiece = piece;
     piece.userData['isSelected'] = true;
 
-    // Cambiar color de la pieza a rojo
-    this.changePieceColor(piece, 0xff0000);  // Color rojo
+    
+    this.changePieceColor(piece, 0xff0000);  
   }
 
   private deselectPiece(): void {
     if (this.selectedPiece) {
       console.log("Deseleccionando pieza");
       
-      // Restaurar el color original de la pieza
+      
       const originalColor = this.selectedPiece.userData['color'] === 'white' ? 0xeeeeee : 0x555555;
       this.changePieceColor(this.selectedPiece, originalColor);
       
@@ -545,7 +757,7 @@ private createKing(x: number, y: number, color: 'white' | 'black'): void {
   private changePieceColor(piece: THREE.Group, color: number): void {
     piece.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        child.material.color.setHex(color);  // Cambia el color del material de la pieza
+        child.material.color.setHex(color);  
       }
     });
   }
@@ -559,7 +771,7 @@ private createKing(x: number, y: number, color: 'white' | 'black'): void {
     const currentY = piece.userData['boardY'];
     let isValidMove = false;
 
-    // Verificar si el movimiento es válido según el tipo de pieza
+    
     if (pieceType === 'pawn') {
         isValidMove = this.isValidPawnMove(currentX, currentY, targetX, targetY, pieceColor);
     } else if (pieceType === 'rook') {
@@ -575,24 +787,24 @@ private createKing(x: number, y: number, color: 'white' | 'black'): void {
     }
 
     if (isValidMove) {
-        // Verificar si hay una pieza en la posición destino para capturarla
+        
         if (this.board[targetX][targetY] !== null) {
             this.removePiece(targetX, targetY);
         }
 
-        // Actualizar la matriz del tablero
+        
         this.board[currentX][currentY] = null;
         this.board[targetX][targetY] = piece;
 
-        // Actualizar la posición en userData
+        
         piece.userData['boardX'] = targetX;
         piece.userData['boardY'] = targetY;
 
-        // Mover la pieza visualmente
+        
         piece.position.set(targetX - (this.boardSize / 2), targetY - (this.boardSize / 2), 0.05);
         console.log(`${pieceType} ${pieceColor} movido a la casilla:`, targetX, targetY);
 
-        // Deseleccionar la pieza
+        
         this.deselectPiece();
     } else {
         console.log("Movimiento inválido");
@@ -600,30 +812,30 @@ private createKing(x: number, y: number, color: 'white' | 'black'): void {
 }
 
 private isValidPawnMove(fromX: number, fromY: number, toX: number, toY: number, color: 'white' | 'black'): boolean {
-  // La dirección de movimiento depende del color del peón
+  
   const moveDirection = color === 'white' ? 1 : -1;
 
-  // Verificar que el movimiento es en la misma columna (movimiento normal)
+  
   if (fromX === toX) {
-      // Verificar que el movimiento es de una casilla adelante
+      
       if (fromY + moveDirection === toY) {
-          // Verificar que no hay piezas en la posición destino
+          
           if (this.board[toX][toY] !== null) return false;
           return true;
       }
 
-      // Verificar que el movimiento es de dos casillas adelante en el primer movimiento
+      
       if ((color === 'white' && fromY === 1 && fromY + 2 * moveDirection === toY) ||
           (color === 'black' && fromY === 6 && fromY + 2 * moveDirection === toY)) {
-          // Verificar que no hay piezas en la posición destino ni en la casilla intermedia
+          
           if (this.board[toX][toY] !== null || this.board[toX][fromY + moveDirection] !== null) return false;
           return true;
       }
   }
 
-  // Verificar que el movimiento es diagonal (captura)
+  
   if (Math.abs(fromX - toX) === 1 && fromY + moveDirection === toY) {
-      // Verificar que hay una pieza enemiga en la posición destino
+      
       const targetPiece = this.board[toX][toY];
       if (targetPiece !== null && targetPiece.userData['color'] !== color) {
           return true;
@@ -634,12 +846,12 @@ private isValidPawnMove(fromX: number, fromY: number, toX: number, toY: number, 
 }
 
   private isValidRookMove(fromX: number, fromY: number, toX: number, toY: number): boolean {
-    // La torre se mueve en línea recta horizontal o vertical
+    
     if (fromX !== toX && fromY !== toY) return false;
     
-    // Verificar que no hay piezas en el camino
+    
     if (fromX === toX) {
-      // Movimiento vertical
+      
       const start = Math.min(fromY, toY) + 1;
       const end = Math.max(fromY, toY);
       
@@ -647,7 +859,7 @@ private isValidPawnMove(fromX: number, fromY: number, toX: number, toY: number, 
         if (this.board[fromX][y] !== null) return false;
       }
     } else {
-      // Movimiento horizontal
+      
       const start = Math.min(fromX, toX) + 1;
       const end = Math.max(fromX, toX);
       
@@ -656,12 +868,12 @@ private isValidPawnMove(fromX: number, fromY: number, toX: number, toY: number, 
       }
     }
     
-    // Verificar si hay una pieza en la posición destino
+    
     if (this.board[toX][toY] !== null) {
-      // Si hay una pieza, verificar que sea de color diferente (captura)
+      
       const targetPiece = this.board[toX][toY];
       if (targetPiece?.userData['color'] === this.selectedPiece?.userData['color']) {
-        return false; // No se puede capturar una pieza del mismo color
+        return false; 
       }
     }
     
@@ -669,18 +881,18 @@ private isValidPawnMove(fromX: number, fromY: number, toX: number, toY: number, 
   }
 
   private isValidBishopMove(fromX: number, fromY: number, toX: number, toY: number): boolean {
-    // El alfil se mueve en diagonal
+    
     const dx = Math.abs(toX - fromX);
     const dy = Math.abs(toY - fromY);
     
-    // Verificar que el movimiento es diagonal (mismo número de casillas en x e y)
+    
     if (dx !== dy) return false;
     
-    // Determinar la dirección del movimiento
+    
     const dirX = toX > fromX ? 1 : -1;
     const dirY = toY > fromY ? 1 : -1;
     
-    // Verificar que no hay piezas en el camino
+    
     let x = fromX + dirX;
     let y = fromY + dirY;
     
@@ -690,12 +902,12 @@ private isValidPawnMove(fromX: number, fromY: number, toX: number, toY: number, 
       y += dirY;
     }
     
-    // Verificar si hay una pieza en la posición destino
+    
     if (this.board[toX][toY] !== null) {
-      // Si hay una pieza, verificar que sea de color diferente (captura)
+      
       const targetPiece = this.board[toX][toY];
       if (targetPiece?.userData['color'] === this.selectedPiece?.userData['color']) {
-        return false; // No se puede capturar una pieza del mismo color
+        return false; 
       }
     }
     
@@ -703,18 +915,18 @@ private isValidPawnMove(fromX: number, fromY: number, toX: number, toY: number, 
   }
 
   private isValidKnightMove(fromX: number, fromY: number, toX: number, toY: number): boolean {
-    // Los caballos se mueven en forma de "L": dos casillas en una dirección y una en la otra
+    
     const dx = Math.abs(toX - fromX);
     const dy = Math.abs(toY - fromY);
 
-    // Verificar que el movimiento es en forma de "L"
+    
     if ((dx === 2 && dy === 1) || (dx === 1 && dy === 2)) {
-        // Verificar si hay una pieza en la posición destino
+        
         if (this.board[toX][toY] !== null) {
-            // Si hay una pieza, verificar que sea de color diferente (captura)
+            
             const targetPiece = this.board[toX][toY];
             if (targetPiece?.userData['color'] === this.selectedPiece?.userData['color']) {
-                return false; // No se puede capturar una pieza del mismo color
+                return false; 
             }
         }
         return true;
@@ -723,22 +935,22 @@ private isValidPawnMove(fromX: number, fromY: number, toX: number, toY: number, 
 }
 
 private isValidQueenMove(fromX: number, fromY: number, toX: number, toY: number): boolean {
-  // La reina se mueve como una torre o un alfil
+  
   return this.isValidRookMove(fromX, fromY, toX, toY) || this.isValidBishopMove(fromX, fromY, toX, toY);
 }
 private isValidKingMove(fromX: number, fromY: number, toX: number, toY: number): boolean {
-  // El rey se mueve una casilla en cualquier dirección
+  
   const dx = Math.abs(toX - fromX);
   const dy = Math.abs(toY - fromY);
 
-  // Verificar que el movimiento es de una casilla en cualquier dirección
+  
   if (dx <= 1 && dy <= 1) {
-      // Verificar si hay una pieza en la posición destino
+      
       if (this.board[toX][toY] !== null) {
-          // Si hay una pieza, verificar que sea de color diferente (captura)
+          
           const targetPiece = this.board[toX][toY];
           if (targetPiece?.userData['color'] === this.selectedPiece?.userData['color']) {
-              return false; // No se puede capturar una pieza del mismo color
+              return false; 
           }
       }
       return true;
@@ -748,10 +960,10 @@ private isValidKingMove(fromX: number, fromY: number, toX: number, toY: number):
   private removePiece(x: number, y: number): void {
     const pieceToRemove = this.board[x][y];
     if (pieceToRemove) {
-      // Eliminar la pieza de la escena
+      
       this.scene.remove(pieceToRemove);
       
-      // Eliminar de las listas correspondientes
+      
       if (pieceToRemove.userData['type'] === 'pawn') {
         this.pawns = this.pawns.filter(p => p !== pieceToRemove);
       } else if (pieceToRemove.userData['type'] === 'rook') {
@@ -760,20 +972,20 @@ private isValidKingMove(fromX: number, fromY: number, toX: number, toY: number):
         this.bishops = this.bishops.filter(b => b !== pieceToRemove);
       }
       
-      // Eliminar la referencia en la matriz del tablero
+      
       this.board[x][y] = null;
     }
   }
   private animate(): void {
     requestAnimationFrame(() => this.animate());
 
-    // Actualizar la posición de la luz direccional para que siga la cámara
+    
     const lightPosition = new THREE.Vector3();
     this.camera.getWorldPosition(lightPosition);
     this.directionalLight.position.copy(lightPosition);
-    this.directionalLight.position.y += 10; // Ajustar la altura de la luz
+    this.directionalLight.position.y += 10; 
 
-    // Actualizar controles de cámara
+    
     this.controls.update();
     this.renderer.render(this.scene, this.camera);
 }
